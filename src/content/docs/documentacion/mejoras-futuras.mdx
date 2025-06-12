@@ -1,0 +1,60 @@
+---
+title: Mejoras Futuras
+description: Posibles ampliaciones técnicas y funcionales del proyecto AFR Impresiones.
+---
+
+Aunque el proyecto ha alcanzado un alto nivel de desarrollo y funcionalidad, existen diversas áreas en las que se puede continuar trabajando para mejorar y escalar la solución. Estas líneas de evolución permitirían que la tienda online "AFR Impresiones" avance hacia una plataforma más robusta, eficiente y alineada con los estándares tecnológicos actuales.
+
+## Seguimiento de pedidos
+
+La base de datos ya contempla un campo `estado` en la tabla `PEDIDOS`, lo que permite diferenciar entre pedidos en carrito, pendientes, completados, cancelados o enviados. Sin embargo, actualmente no existe una interfaz de usuario que permita al cliente realizar el seguimiento de su pedido.
+
+Implementar una sección visible en la zona de usuario donde se pueda consultar el estado del pedido en tiempo real supondría una mejora notable en la experiencia del cliente y en la confianza durante el proceso de compra.
+
+## Gestión de archivos subidos
+
+Una de las funcionalidades clave para una imprenta personalizada es la correcta gestión de archivos proporcionados por los clientes. En esta versión inicial del proyecto, los archivos no se están almacenando ni vinculando funcionalmente con los pedidos realizados.
+
+Se plantea como mejora prioritaria:
+
+- Almacenamiento seguro de los archivos subidos.
+- Asociación directa con el pedido y el producto correspondiente.
+- Acceso desde la zona de administración para su correcta impresión o revisión.
+
+## Métodos de pago e integración con pasarelas
+
+Actualmente no se ha implementado ninguna pasarela de pago real. En una primera fase se podría optar por métodos simples como:
+
+- Bizum
+- Transferencia bancaria
+
+Una vez recibido el pago, se enviaría un correo automático al cliente notificando la confirmación del pedido.
+
+En fases más avanzadas se plantea la integración de soluciones profesionales como **Stripe** o **PayPal**, con gestión automatizada y segura de las transacciones.
+
+## Mejora tecnológica del frontend
+
+Actualmente, la interfaz está construida de forma tradicional, pero se contempla como una mejora técnica importante reconstruir el frontend utilizando tecnologías modernas como:
+
+- **Vue.js** o **Nuxt.js**
+- **TypeScript**
+
+Esto permitiría mejorar:
+
+- La organización y mantenibilidad del código.
+- El rendimiento del sitio.
+- La escalabilidad futura del proyecto.
+
+## Activación de funcionalidades en base de datos
+
+La base de datos ya contempla varias funcionalidades no implementadas aún en el frontend:
+
+- **Sistema de descuentos** basado en cantidad mínima o fechas (`DESCUENTOS`).
+- **Gestión de inventario**, con registros de entrada/salida (`MOVIMIENTOS_INVENTARIO`).
+
+Activar y conectar estos sistemas permitiría automatizar aspectos clave de la operación de la tienda, mejorar el control logístico y ofrecer ofertas personalizadas a los clientes.
+
+---
+
+**Conclusión:**  
+Estas mejoras representan la evolución natural del proyecto hacia una solución más completa, profesional y alineada con las necesidades reales de un negocio de impresión personalizada online.

@@ -1,0 +1,103 @@
+---
+title: Estructura de Carpetas
+description: Organización del proyecto eCommerce AFR Impresiones.
+---
+
+import { FileTree } from '@astrojs/starlight/components';
+
+
+<FileTree>
+- assets/
+- components/
+- css
+  - components/
+  - fonts/
+  - global/
+  - pages/
+- fonts/
+- img/
+- js
+  - products/
+  - index.js
+  - ...
+- server
+  - connectDB.php
+  - ...
+- utils/
+  - toast.js
+  - ...
+- vendor/
+- index.php
+</FileTree>
+
+
+## 1. Directorios de Recursos Estáticos y Componentes
+
+Estos directorios contienen archivos que son consumidos por el front-end de la aplicación.
+
+### `assets/`
+Contiene recursos estáticos genéricos como los favicon.
+
+### `components/`
+Contiene fragmentos reutilizables de la interfaz de usuario.
+
+### `css/`
+Almacena las hojas de estilo del proyecto. Divididos por componentes, páginas o fuentes para facilitar el mantenimiento.
+
+### `fonts/`
+Aquí se almacenan las fuentes web utilizadas en el proyecto, como `.woff`, `.woff2`, `.ttf`, etc.
+
+### `img/`
+Contiene imágenes como íconos o fotografías.
+
+### `js/`
+Contiene scripts JavaScript del proyecto.
+
+### `utils/`
+Contiene clases y funciones reutilizables tanto para el front-end como para el back-end, como validadores o funcionalidades de componentes.
+
+---
+
+## 2. Directorios de Lógica del Servidor
+
+Manejan la lógica de backend y funcionalidades comunes.
+
+### `server/`
+Incluye archivos PHP responsables de la lógica de negocio, APIs y controladores del lado del servidor..
+
+### `vendor/`
+Contiene las dependencias instaladas con Composer.
+
+---
+
+## 3. Archivos de Configuración y del Sistema
+
+Archivos clave para el funcionamiento y despliegue.
+
+### `.htaccess`
+Archivo de configuración para reglas de reescritura de URLs, seguridad, redirecciones, etc.
+
+### `composer.json` / `composer.lock`
+Definen y bloquean las dependencias PHP del proyecto. El archivo `.lock` asegura consistencia en todos los entornos.
+
+### `errores.log`
+Archivo de log que almacena errores de la aplicación. Es útil para depuración y monitoreo del sistema.
+
+---
+
+## 4. Archivos PHP de Nivel Superior (Páginas / Rutas)
+
+Archivos PHP que actúan como páginas accesibles del sitio web.
+
+### `index.php`
+Punto de entrada principal del sitio. Generalmente carga rutas, sesiones, cabeceras, etc.
+
+### `aviso-legal.php`
+Contiene la información legal obligatoria de la empresa.
+
+### `camisetas.php`, `productos.php`, etc.
+Archivos que representan secciones específicas del eCommerce. Cada uno gestiona su vista y lógica asociada.
+
+---
+
+> ⚙️ Esta estructura busca mantener el proyecto limpio, modular y escalable, facilitando tanto el desarrollo como el mantenimiento futuro.

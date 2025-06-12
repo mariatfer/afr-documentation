@@ -1,0 +1,100 @@
+---
+title: Base de Datos
+description: Estructura y relaciones de la base de datos utilizada en el proyecto AFR Impresiones.
+---
+import { Aside } from '@astrojs/starlight/components';
+
+# Modelo de Base de Datos
+
+La base de datos del proyecto **AFR Impresiones** está diseñada para soportar un sistema de comercio electrónico enfocado en productos personalizables.
+A continuación se muestra el esquema relacional de la base de datos:
+<img src="/src/assets/afr_ddbb.png" alt="Diagrama de la base de datos" style={{ maxWidth: '100%'}} />
+
+---
+
+
+## 1. Gestión de Usuarios
+
+### `USUARIO`
+Almacena la información básica de los usuarios registrados:
+- `id_usuario`, `nombre`, `apellidos`, `email`, `clave`, `telefono`, `direccion`, `creado`, `modificado`.
+
+### `ROLES` y `ROL_USUARIO`
+Implementación de control de acceso:
+- `ROLES`: define los tipos de rol (admin, cliente, etc.).
+- `ROL_USUARIO`: tabla intermedia que asocia usuarios con sus roles.
+
+---
+
+## 2. Catálogo de Productos
+
+### `CATEGORIAS`
+Permite clasificar los productos por tipo (ej. imprenta, marketing, cartelería...).
+
+### `PRODUCTOS`
+Contiene los productos disponibles en el eCommerce:
+- Atributos como `nombre`, `precio_base`, `descripcion`, `imagen`, y si es `es_personalizable`.
+
+### `PERSONALIZABLES` y `PERSONALIZABLES_PRODUCTOS`
+Modelo flexible de personalización:
+- `PERSONALIZABLES`: define tipos de opciones (tamaño, color, texto, imágenes, etc.).
+- `PERSONALIZABLES_PRODUCTOS`: vincula productos con sus opciones personalizables.
+
+---
+
+## 3. Gestión de Pedidos
+
+### `PEDIDOS`
+Registra cada pedido realizado:
+- Campos como `estado`, `direccion_envio`, `precio_total`, `telefono`, y `fecha_pedido`.
+
+### `ARTICULOS_PEDIDO`
+Desglosa los productos incluidos en un pedido:
+- Permite múltiples productos por pedido, con su cantidad, precio y observaciones.
+
+### `PERSONALIZABLES_PEDIDOS`
+Almacena las personalizaciones específicas aplicadas a cada artículo de un pedido.
+
+### `ARCHIVOS_PEDIDOS`
+Gestión de archivos subidos por el cliente (como diseños, imágenes, etc.).
+
+---
+
+## 4. Sistema de Pagos
+
+### `PAGOS`
+Registra los pagos realizados por pedido:
+- Incluye `metodo_pago`, `cantidad`, `estado_pago` y `fecha_pago`.
+
+<Aside type="caution">Por el momento, el proyecto no incluye pasarela de pago. El pedido se guarda, pero el pago no se realiza. El usuario puede ver el pedido en la página de "Mi Perfil".</Aside>
+
+---
+
+## 5. Inventario y Descuentos
+
+### `MOVIMIENTOS_INVENTARIO`
+Controla entradas y salidas de inventario asociadas a productos.
+
+### `DESCUENTOS`
+Permite aplicar descuentos por producto:
+- Tipos: `porcentaje` o `fijo`, con condiciones como `cantidad_min` y fechas de validez.
+
+<Aside type="caution">Actualmente, las funcionalidades de gestión de inventario y descuentos aún no están implementadas en el proyecto.</Aside>
+
+---
+
+
+## 6. Relaciones Principales
+
+```plaintext
+USUARIO
+  ├──< ROL_USUARIO >──┤ ROLES
+  └──< PEDIDOS >──┬──< ARTICULOS_PEDIDO >──┬── PRODUCTOS
+                  │                         └──< PERSONALIZABLES_PEDIDOS >── PERSONALIZABLES
+                  └── PAGOS
+                  └── ARCHIVOS_PEDIDOS
+
+PRODUCTOS
+  └──< PERSONALIZABLES_PRODUCTOS >── PERSONALIZABLES
+  └── MOVIMIENTOS_INVENTARIO
+  └── DESCUENTOS
