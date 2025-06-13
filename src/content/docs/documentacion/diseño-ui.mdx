@@ -3,7 +3,11 @@ title: Diseño UI
 description: Detalles sobre el diseño de la interfaz de usuario y la experiencia visual en AFR Impresiones.
 ---
 
-# Diseño de la Interfaz de Usuario (UI)
+import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import toastSuccess from '../../../assets/toast-success.png';
+import toastError from '../../../assets/toast-error.png';
+import productCard from '../../../assets/productCards.png';
 
 En esta sección se describen los aspectos clave del diseño de la interfaz de usuario del proyecto **AFR Impresiones**, enfocados en crear una experiencia amigable, clara y accesible para los usuarios.
 
@@ -20,8 +24,21 @@ En esta sección se describen los aspectos clave del diseño de la interfaz de u
 
 ## 2. Paleta de Colores
 
-- **Color principal:** Azul oscuro (#04435F) — utilizado en botones, encabezados y elementos importantes.
-- **Color secundario:** Verde lima (#a1db0e) — para acentos, botones secundarios y elementos interactivos.
+- **Color principal:** Azul oscuro (#04435F) — utilizado en encabezados y elementos importantes.
+- **Color secundario:** Verde lima (#a1db0e) — para acentos, botones y elementos interactivos.
+<br/>
+<br/>
+<CardGrid stagger>
+  <Card>
+    <div class="w-full h-32 rounded-md" style="background-color: #04435F; height: 150px;"></div> 
+    <h4 class="mt-2 text-center text-gray-700">Azul oscuro</h4>
+  </Card>
+
+  <Card>
+    <div class="w-full h-32 rounded-md" style="background-color: #a1db0e; height: 150px;"></div>
+    <h4 class="mt-2 text-center text-gray-700">Verde lima</h4>
+  </Card>
+</CardGrid>
 
 ---
 
@@ -52,6 +69,18 @@ El proyecto utiliza varias fuentes para distintas necesidades:
 - **Tarjetas de producto:** Diseñadas para mostrar imagen y nombre de forma atractiva.
 - **Toast Notifications:** Mensajes emergentes para confirmar acciones o mostrar errores, visibles temporalmente en la esquina superior derecha.
 
+<CardGrid stagger>
+  <Card>
+    <Image src={toastSuccess} alt="Diagrama de la base de datos" />
+    <Image src={toastError} alt="Diagrama de la base de datos" />
+    <h4 class="mt-2 text-center text-gray-700">Toast</h4>
+  </Card>
+
+  <Card>
+    <Image src={productCard} alt="Diagrama de la base de datos" />
+    <h4 class="mt-2 text-center text-gray-700">Tarjetas de producto</h4>
+  </Card>
+</CardGrid>
 ---
 
 ## 6. Diseño Responsivo
