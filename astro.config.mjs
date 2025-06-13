@@ -7,7 +7,7 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Documentación AFR',
-			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/withastro/starlight' }],
+			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/mariatfer/afr-documentation' }],
 			sidebar: [
 				{ label: 'Introducción', link: '/documentacion/introduccion' },
 				{ label: 'Estructura', link: '/documentacion/estructura' },
@@ -16,6 +16,7 @@ export default defineConfig({
 				{ label: 'Base de datos', link: '/documentacion/base-de-datos' },
 				{ label: 'Flujo de compra', link: '/documentacion/flujo-compra' },
 				{ label: 'Mejoras futuras', link: '/documentacion/mejoras-futuras' },
+				{ label: 'Gestion y desarrollo', link: '/documentacion/gestion-y-desarrollo' },
 			],
 		}),
 	],
