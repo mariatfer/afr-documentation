@@ -1,13 +1,31 @@
 ---
-title: Bienvenido a AFR
-description: Documentación técnica y funcional del proyecto eCommerce "AFR Impresiones".
+title: Frontend Documentation
+description: Architecture, patterns, and performance documentation for a Nuxt 4 platform.
 template: splash
 hero:
-  tagline: Plataforma de comercio electrónico especializada en impresiones personalizadas.
-  image:
-    file: ../../assets/logo.svg
+  tagline: Production-grade Nuxt 4 + Vue 3 SSR application. SEO-optimised, performant, and interview-ready.
   actions:
-    - text: Ver documentación
-      link: /documentacion/introduccion
+    - text: Project Overview
+      link: /documentation/project-overview
       icon: right-arrow
 ---
+
+## Documentation Structure
+
+```
+docs/
+├── index.mdx                      # This file — landing page
+└── documentation/
+    ├── project-overview.mdx        # Architecture, tech stack, key features
+    ├── code-fragments.mdx          # Notable patterns and utilities
+    ├── seo-performance.mdx         # SEO layers, image optimisations, runtime perf
+    └── metrics.mdx                 # Lighthouse estimates, screenshots, bundle size
+```
+
+## About This Project
+
+**Stack:** Nuxt 4 · Vue 3 · TypeScript · SCSS · Headless CMS · Vercel
+
+**Purpose:** Public‑facing SSR website with a browsable product catalog, dynamic content pages, contact/quote forms with file uploads, full SEO instrumentation, and cookie‑consent compliance.
+
+**Key patterns:** Generic service layer for API calls, singleton hover interaction pattern, GSAP‑based scroll reveal components, type‑safe locale loading, polymorphic button component, and contrast‑aware UI utilities.

@@ -1,0 +1,444 @@
+---
+title: Interesting Code Fragments
+description: Notable patterns and implementations from this Nuxt 4 project
+---
+
+## 1. Dynamic Sitemap (Safe Example)
+
+This project uses a dynamic sitemap generated at build time.  
+A server endpoint returns structured entries for all dynamic pages, including optional image metadata.
+
+```ts
+// server/api/__sitemap__/urls.ts
+import { defineSitemapEventHandler } from '#imports'
+import type { SitemapUrlInput } from '#sitemap/types'
+
+export default defineSitemapEventHandler(async () => {
+  // Example placeholder fetches — replace with your own data sources
+  const products = await fetchProducts()
+  const articles = await fetchArticles()
+
+  const urls: SitemapUrlInput[] = [
+    ...products.map((p) => ({
+      loc: `/products/${p.slug}`,
+      changefreq: 'weekly',
+      priority: 0.8,
+      images: p.image ? [{ loc: p.image.url, title: p.image.alt }] : [],
+    })),
+    ...articles.map((a) => ({
+      loc: `/articles/${a.slug}`,
+      changefreq: 'monthly',
+      priority: 0.5,
+    })),
+  ]
+
+  return urls
+})
+```
+
+**Why this pattern works:**
+
+- **Parallel fetching (recommended)**: In real implementations, Promise.all can fetch multiple content types concurrently
+- **Typed output**: `SitemapUrlInput` guarantees correct structure for the sitemap module
+- **Image inclusion**: Product images embedded directly in the sitemap boost Google Image Search visibility
+- **Priority grading**: Different content types get different priorities
+
+Configured in `nuxt.config.ts`:
+
+```ts
+sitemap: {
+  sources: ['/api/__sitemap__/urls'],
+},
+```
+
+---
+
+## 2. GSAP Scroll Reveal Component
+
+A `<ScrollReveal>` Vue component wraps content with scroll-triggered animations using GSAP's ScrollTrigger.
+
+```vue
+<!-- components/ui/ScrollReveal.vue -->
+<script setup lang="ts">
+import gsap from 'gsap'
+
+interface Props {
+  direction?: 'up' | 'down' | 'left' | 'right'
+  distance?: number
+  duration?: number
+  start?: string
+  end?: string
+  once?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  direction: 'up',
+  distance: 32,
+  duration: 1,
+  start: 'top bottom',
+  end: '30px 80%',
+  once: true,
+})
+
+const revealRef = ref<HTMLElement | null>(null)
+
+onMounted(() => {
+  if (!revealRef.value) return
+
+  let x = 0
+  let y = 0
+
+  switch (props.direction) {
+    case 'up':    y = props.distance * 2; break
+    case 'down':  y = -props.distance * 2; break
+    case 'left':  x = props.distance * 2; break
+    case 'right': x = -props.distance * 2; break
+  }
+
+  gsap.fromTo(
+    revealRef.value,
+    { opacity: 0, x, y, scale: 0.85 },
+    {
+      opacity: 1, x: 0, y: 0, scale: 1,
+      scrollTrigger: {
+        trigger: revealRef.value,
+        start: props.start,
+        end: props.end,
+        scrub: 0.5,
+      },
+    },
+  )
+})
+</script>
+
+<template>
+  <div ref="revealRef">
+    <slot />
+  </div>
+</template>
+```
+
+**Usage:**
+
+```vue
+<ScrollReveal direction="left" :distance="48">
+  <section>Animates in from the left when scrolled into view</section>
+</ScrollReveal>
+```
+
+**Design decisions:**
+
+| Decision | Rationale |
+|---|---|
+| **GSAP over IntersectionObserver** | Enables scrub, timeline control, and hardware-accelerated transforms |
+| **`scrub: 0.5`** | Links animation progress to scroll position with a 0.5s lag — smooth, organic feel |
+| **`scale: 0.85`** | Subtle scale-up prevents the animation from feeling flat |
+| **Client-only plugin** | GSAP plugins registered in `app/plugins/gsap.client.ts` (ScrollTrigger + SplitText) — never executed on the server |
+
+---
+
+## 3. Singleton Card Hover Effect
+
+A composable that manages a single mousemove listener shared across all card components.
+
+```ts
+// composables/useCardHover.ts
+let active = false
+let frame: number | null = null
+let lastEvent: MouseEvent | null = null
+let instances = 0
+
+export function useCardHover(selector: string) {
+  const cards = ref<NodeListOf<HTMLElement> | null>(null)
+
+  const update = () => {
+    cards.value = document.querySelectorAll(selector)
+  }
+
+  const onMove = (ev: MouseEvent) => {
+    lastEvent = ev
+    if (frame) return
+
+    frame = requestAnimationFrame(() => {
+      frame = null
+      if (!cards.value || !lastEvent) return
+
+      cards.value.forEach((card) => {
+        // simplified safe example
+        card.style.setProperty('--x', `${lastEvent!.clientX}px`)
+        card.style.setProperty('--y', `${lastEvent!.clientY}px`)
+      })
+    })
+  }
+
+  onMounted(() => {
+    update()
+
+    if (!active) {
+      window.addEventListener('mousemove', onMove, { passive: true })
+      active = true
+    }
+
+    instances++
+  })
+
+  onUnmounted(() => {
+    instances--
+    if (instances === 0) {
+      window.removeEventListener('mousemove', onMove)
+      active = false
+    }
+  })
+}
+```
+
+**Key decisions:**
+
+| Decision | Rationale |
+|---|---|
+| **Single `requestAnimationFrame`** | One rAF callback handles all cards per frame — throttles to 60fps |
+| **Module-level state** | Singleton pattern: state lives outside the function, shared across all call sites |
+| **Instance counting** | Listener removed only when `instanceCount` reaches 0 |
+| **`handleMouseLeave`** | Hides blob on card exit (separate from mousemove, avoids opacity race conditions) |
+| **`updateCards`** | Re-queries DOM when async data arrives (e.g., after Strapi fetch) |
+| **Web Animations API** | `element.animate()` runs off the main thread |
+
+---
+
+## 4. Generic Service Layer
+
+A registry-based service layer that centralises API calls.
+
+```ts
+// composables/useService.ts
+export async function useService<T, P = undefined>(
+  name: keyof typeof SERVICES,
+  params?: P,
+) {
+  const fn = SERVICES[name] as (p?: P) => Promise<T>
+  return { data: await fn(params) }
+}
+```
+
+**Usage in a page:**
+
+```ts
+const { data: products } = await useService('getProducts')
+const { data: article } = await useService('getArticle', { slug: 'example' })
+```
+
+**Why this works:** The `as const` assertion on `SERVICES` makes the object fully literal — `keyof typeof SERVICES` resolves to `'getProducts' | 'getCategories' | 'getArticle' | ...`.
+
+---
+
+## 5. Form Submission Pattern (Safe Example)
+
+This project uses a composable to handle form submission with support for file uploads, reactive state, and error handling.  
+The example below is fully generic and does not reference any real backend.
+
+```ts
+// composables/useFormSubmit.ts
+export function useFormSubmit() {
+  const isSending = ref(false)
+  const error = ref<string | null>(null)
+  const success = ref(false)
+
+  const sendForm = async (endpoint: string, payload: Record<string, any>) => {
+    isSending.value = true
+    error.value = null
+    success.value = false
+
+    try {
+      const formData = new FormData()
+
+      Object.entries(payload).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((file) => formData.append(`${key}[]`, file))
+        } else {
+          formData.append(key, String(value))
+        }
+      })
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!res.ok) throw new Error('Form submission failed')
+      success.value = true
+    } catch (err) {
+      error.value = (err as Error).message
+    } finally {
+      isSending.value = false
+    }
+  }
+
+  return { sendForm, isSending, error, success }
+}
+```
+
+**File upload constraints (Example values)**:
+
+| Constraint | Value |
+|---|---|
+| Max total upload size | 20 MB |
+| Max per-file size | 5 MB |
+| Max files | 5 |
+| Allowed extensions | 6 |
+
+Each validated MIME type has a corresponding entry in `ALLOWED_TYPES` and `ALLOWED_EXTENSIONS` arrays. The validator runs client-side before submission.
+
+---
+
+## 6. Polymorphic Button Component
+
+A single component that renders as `<router-link>`, `<a>`, or `<button>` depending on the props.
+
+```vue
+<!-- components/ui/TheButton.vue -->
+<script setup lang="ts">
+const props = withDefaults(
+  defineProps<{
+    to?: string
+    href?: string
+    type?: 'button' | 'submit' | 'reset'
+    action?: () => void
+  }>(),
+  {
+    type: 'button',
+  },
+)
+
+const emit = defineEmits(['click'])
+
+const tag = computed(() => {
+  if (props.to) return 'router-link'
+  if (props.href) return 'a'
+  return 'button'
+})
+
+function handleClick(event: Event) {
+  if (props.action) {
+    event.preventDefault()
+    props.action()
+  }
+  emit('click', event)
+}
+</script>
+
+<template>
+  <component
+    :is="tag"
+    :to="to"
+    :href="href"
+    :type="type"
+    class="button"
+    @click="handleClick"
+  >
+    <slot />
+  </component>
+</template>
+```
+
+**Why this matters:** Instead of three separate components or `v-if` chains, one component handles internal routes (`router-link`), external links (`<a>`) with automatic `target="_blank"` and `rel="noopener"`, and form buttons. The click handler also supports a declarative `action` prop for custom callbacks without event listeners.
+
+---
+
+## 7. URL Builder Utility (Safe Example)
+
+Centralises route path construction, preventing hardcoded URL strings scattered across components.
+
+```ts
+// composables/useAppUrls.ts
+type UrlBase = 'products' | 'articles' | 'categories'
+
+export const useAppUrls = () => {
+  const baseUrls: Record<UrlBase, string> = {
+    products: '/products',
+    articles: '/articles',
+    categories: '/categories',
+  }
+
+  const buildUrl = (base: UrlBase, slug?: string) =>
+    slug ? `${baseUrls[base]}/${slug}` : baseUrls[base]
+
+  return {
+    productUrl: (slug?: string) => buildUrl('products', slug),
+    articleUrl: (slug?: string) => buildUrl('articles', slug),
+    categoryUrl: (slug?: string) => buildUrl('categories', slug),
+  }
+}
+```
+
+---
+
+## 8. Form Validator Class (Safe Example)
+
+A standalone `Validator` class handles field-level validation with composable rules and localized error messages.
+
+```ts
+// utils/validator.ts
+export class Validator {
+  private rules = {
+    name: [(v, m) => (!v || v.length < 2 ? m.name : undefined)],
+    email: [(v, m) => (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? m.email : undefined)],
+    message: [(v, m) => (v.length < 10 ? m.message : undefined)],
+  }
+
+  validate(fields, messages) {
+    const errors = {}
+    for (const key in fields) {
+      if (this.rules[key]) {
+        for (const rule of this.rules[key]) {
+          const err = rule(fields[key], messages)
+          if (err) {
+            errors[key] = err
+            break
+          }
+        }
+      }
+    }
+    return errors
+  }
+}
+```
+
+The `useFormValidator` composable wraps this class and provides reactive `formErrors`, per-field validation (`validateField`), and convenience helpers (`clearError`, `getFirstError`, `isFormValid`).
+
+---
+
+## 9. Type-Safe Locale Loader (Safe Example)
+
+```ts
+// composables/useLocales.ts
+type TranslationKey = 'home' | 'products' | 'common'
+
+export async function useLocales<T>(key: TranslationKey) {
+  const module: { default: T } = await import(`../locales/en/${key}.json`)
+  return { data: module.default }
+}
+```
+
+**What it enables:** The union type acts as a compile-time allowlist.
+
+---
+
+## 10. Cookie Consent with Event Bus (Safe Example)
+
+```ts
+// composables/useCookies.ts
+const applyConsent = (consent) => {
+  if (!import.meta.client) return
+  if (consent.analytics) {
+    document.dispatchEvent(new CustomEvent('analytics-enabled'))
+  }
+}
+
+const revokeConsent = () => {
+  if (!import.meta.client) return
+  document.cookie = 'cookie-consent=; max-age=0; path=/'
+  document.dispatchEvent(new CustomEvent('consent-revoked'))
+}
+```
+
+**Pattern:** Components that embed third-party content (Google Maps iframe) listen for `thirdParties-cookies-accepted` and mount or lazy-load accordingly. The cookie is versioned — bumping `CURRENT_VERSION` forces all returning visitors to re-consent.

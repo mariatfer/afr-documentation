@@ -1,0 +1,104 @@
+---
+title: Screenshots & Metrics
+description: Placeholder screenshots and performance metrics for this Nuxt 4 project
+---
+
+## Lighthouse Performance Report
+
+> These metrics represent **fictional but realistic** performance targets for a well‑optimised Nuxt 4 SSR application.
+
+### Desktop
+
+| Metric | Value | Rating |
+|---|---|---|
+| **Performance** | 95–100 | 🟢 Excellent |
+| **Accessibility** | 100 | 🟢 Excellent |
+| **Best Practices** | 100 | 🟢 Excellent |
+| **SEO** | 100 | 🟢 Excellent |
+
+| Web Vital | Valor | Estado |
+| --- | --- | --- |
+| **FCP** | **0.6 s** | 🟢 Good |
+| **LCP** | **0.8 s** | 🟢 Good |
+| **TBT** | **30 ms** | 🟢 Good |
+| **CLS** | **0** | 🟢 Good |
+| **SI** | **1.9 s** | 🟢 Good |
+| **TTFB** | **0.3 s** | 🟢 Good |
+
+### Mobile
+
+| Metric | Value | Rating |
+|---|---|---|
+| **Performance** | 80-90 | 🟡 Moderate |
+| **Accessibility** | 100 | 🟢 Excellent |
+| **Best Practices** | 100 | 🟢 Excellent |
+| **SEO** | 100 | 🟢 Excellent |
+
+| Web Vital | Valor | Estado |
+| --- | --- | --- |
+| **FCP** | **2.6 s** | 🟡 Aceptable |
+| **LCP** | **3.8 s** | 🟡 Aceptable |
+| **TBT** | **20 ms** | 🟢 Good |
+| **CLS** | **0.005** | 🟢 Good |
+| **SI** | **4.5 s** | 🟡 Aceptable |
+| **TTFB** | **0.4 s** | 🟢 Good |
+
+## Screenshots
+
+### Homepage — Hero Section
+
+![Homepage hero](../../../assets/home-hero-section.png)
+
+### Product Catalog
+
+![Product catalog](../../../assets/product-catalog.png)
+
+### Contact Form
+
+![Contact form](../../../assets/contact-form.png)
+
+### Mobile (Product Detail)
+
+
+![Mobile product detail](../../../assets/mobile-product-detail.png)
+
+## Bundle Size Breakdown
+
+| Asset | Size (gzipped) | Notes |
+|---|---|---|
+| Initial HTML (SSR) | ~8 KB | Full page content, no white flash |
+| Critical CSS | ~22 KB | Inlined per-route |
+| Vue Runtime | ~45 KB | Includes carousel + UI components |
+| Nuxt Runtime | ~18 KB | Hydration + composables |
+| Page Chunk (home) | ~12 KB | Client-side hydration |
+| Page Chunk (products) | ~25 KB | Includes carousel + UI components |
+| Page Chunk (contact) | ~15 KB | Includes form validation + upload logic |
+| Icons | ~2 KB | Tree‑shaken icon sets |
+| Fonts (self‑hosted) | ~12–15 KB | Modern woff2 fonts |
+| GSAP | ~22 KB | ScrollTrigger + SplitText (deferred) |
+| **Total (homepage)** | **~120–140 KB** | Fully loaded |
+
+## Performance Wins Summary
+
+| Optimisation | Impact |
+|---|---|
+| SSR rendering | First paint includes meaningful content |
+| `@nuxt/image` | Automatic WebP + responsive `srcset` |
+| Lazy loading | Below‑the‑fold images load only when needed |
+| Singleton hover listener | One global listener instead of many |
+| Self‑hosted fonts | Zero DNS lookups, no layout shift |
+| Preconnect hints | Faster initial network negotiation |
+| SCSS mixins tree‑shaken | Only used mixins included |
+| Passive event listeners | Smooth scrolling |
+| Inline critical CSS | Faster first render |
+| Brotli/gzip compression | Smaller payloads |
+
+### Monitoring
+
+The project is compatible with real‑user monitoring tools such as:
+
+- Web Vitals collectors
+- Analytics platforms
+- Performance dashboards
+
+These can be enabled depending on deployment needs.

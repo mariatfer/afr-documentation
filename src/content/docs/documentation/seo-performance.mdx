@@ -1,0 +1,187 @@
+---
+title: Performance & SEO Highlights
+description: How this project handles SEO dynamically, optimises images, and maintains performance
+---
+
+## SEO Architecture
+
+The SEO system is built in layered form, allowing global defaults, per‑page overrides, structured data, and dynamic sitemap generation.
+
+### Layer 1: Global Fallback
+
+A global SEO fallback is loaded in `app.vue` and applied as the baseline for all pages.
+
+```ts
+// app/app.vue (simplified)
+const { data: seoDefaults } = await useLocales<SEO>('seo-fallback')
+usePageSeo(seoDefaults)
+```
+
+### Layer 2: Per-Page SEO via `usePageSeo`
+
+Each page provides its own metadata through a typed composable.
+
+```ts
+// composables/usePageSeo.ts
+export function usePageSeo(seo: SEO) {
+  if (!seo) return
+
+  useSeoMeta({
+    title: seo.title,
+    description: seo.description,
+    ogTitle: seo.ogTitle || seo.title,
+    ogDescription: seo.ogDescription || seo.description,
+    twitterCard: 'summary_large_image',
+    ogType: 'website',
+    robots: seo.index ? 'index, follow' : 'noindex, nofollow',
+    ogImage: seo.image?.url,
+    ogImageAlt: seo.image?.alt,
+  })
+}
+```
+
+**Key design decisions:**
+
+- **Guarded access**: `if (!seo) return` prevents `useSeoMeta` from being called with undefined data
+- **Fallback chaining**: `ogTitle || metaTitle` ensures if OG-specific text isn't provided, the main title is used
+- **Typed Media object**: `seo.ogImage` is a `Media` interface — access the `.url` property explicitly
+- **Empty return type**: Returns `void` — side-effect only, no reactive state to manage
+
+### Layer 3: Canonical URLs
+
+Canonical URLs are generated dynamically based on the current route.
+
+```ts
+const siteUrl = 'https://example.com'
+const route = useRoute()
+
+useHead(() => ({
+  link: [
+    { rel: 'canonical', href: `${siteUrl}${route.path}` },
+  ],
+}))
+```
+
+### Layer 4: Structured Data (Schema.org)
+
+A global identity schema is defined once and applied automatically.
+
+```ts
+// config/schema-org.ts
+export const schemaOrgConfig = {
+  identity: {
+    type: 'Organization',
+    name: 'Example Company',
+    url: 'https://example.com',
+    logo: '/logo.png',
+  },
+}
+```
+
+Per‑page structured data can be added via composables:
+
+```ts
+// composables/useProductSchema.ts
+export function useProductSchema(product) {
+  if (!product) return
+
+  useSchemaOrg([
+    {
+      '@type': 'Product',
+      name: product.name,
+      description: product.description,
+      image: product.image?.url,
+    },
+  ])
+}
+```
+
+### Layer 5: Dynamic Sitemap
+
+A server endpoint generates sitemap entries for all dynamic routes.
+See the Dynamic Sitemap section in the code fragments for a safe example.
+
+## Performance Strategy
+
+### Route Rules (ISR-Ready)
+
+The project is structured to support incremental static regeneration (ISR) and stale‑while‑revalidate (SWR) strategies.
+
+Example configuration:
+
+| Route Pattern | Strategy | Revalidation |
+| --- | --- | --- |
+| ``/`` | Prerender | Never |
+| ``/content/**`` | SWR | 1 hour |
+| ``/articles/**`` | SWR | 2 hours |
+
+Nitro configuration:
+
+```ts
+nitro: {
+  future: { nativeSWR: true },
+  prerender: { crawlLinks: false },
+  compressPublicAssets: true,
+}
+```
+
+### Image Optimisation
+
+Images are handled through @nuxt/image, which provides automatic format conversion, responsive srcset, and lazy loading.
+
+```ts
+image: {
+  quality: 75,
+  format: ['webp', 'jpg'],
+  screens: { sm: 640, md: 768, lg: 1024 },
+}
+```
+
+**Optimisation rules:**
+
+- Use `preload` only for above‑the‑fold hero images
+- Use `loading="lazy"` for all below‑the‑fold images
+- Prefer `NuxtImg` over native `<img>` for automatic optimisation
+
+### CSS Architecture
+
+Global styles include fonts, variables, resets, and transitions.
+
+```ts
+export const globalStyles = [
+  '@/assets/fonts.css',
+  '@/assets/variables.css',
+  '@/assets/reset.scss',
+  '@/assets/transitions.css',
+]
+```
+
+- Design tokens centralised in CSS custom properties
+- SCSS mixins auto‑injected via Vite
+- All components use scoped styles
+- Reusable transition classes for page and UI animations
+
+### Bundle Size Management
+
+- Icons are tree‑shaken — only used icons are included
+- Fonts are self‑hosted to avoid layout shifts
+- Swiper CSS is imported locally, not globally
+- Critical CSS is inlined in production
+
+### Runtime Performance
+
+A singleton hover listener powers card hover effects using `requestAnimationFrame`.
+
+All scroll and resize listeners use `{ passive: true }` — the browser can optimise scrolling without waiting for JS.
+
+Preconnect hints improve initial network performance
+
+```ts
+app: {
+  head: {
+    link: [
+      { rel: 'preconnect', href: 'https://api.example.com', crossorigin: '' },
+    ],
+  },
+},
+```
